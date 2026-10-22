@@ -227,7 +227,18 @@ export default function Services() {
                   <i />
                 </span>
 
-                <article className="j-card">
+                <article 
+                  className="j-card card-glow"
+                  onMouseMove={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    e.currentTarget.style.setProperty('--mx', `${(e.clientX - rect.left).toFixed(1)}px`);
+                    e.currentTarget.style.setProperty('--my', `${(e.clientY - rect.top).toFixed(1)}px`);
+                    e.currentTarget.style.setProperty('--glow-opacity', '1');
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.setProperty('--glow-opacity', '0');
+                  }}
+                >
                   <div className="j-img">
                     <img
                       src={svc.image}

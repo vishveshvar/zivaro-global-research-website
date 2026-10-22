@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { gsap, ScrollTrigger } from '../utils/gsap';
+import { gsap, ScrollTrigger, isReducedMotion } from '../utils/gsap';
+import { useRouter } from '../utils/router';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const headerRef = useRef(null);
   const progressRef = useRef(null);
+  const { currentPath, navigate } = useRouter();
 
   const navLinks = [
-    { name: 'Services', href: '#services' },
-    { name: 'Expertise', href: '#expertise' },
-    { name: 'Process', href: '#process' },
-    { name: 'Work', href: '#work' },
-    { name: 'Leadership', href: '#leadership' },
+    { name: 'Home', href: '/' },
+    { name: 'About Us', href: '/about' },
+    { name: 'Services', href: '/services' },
+    { name: 'Expertise', href: '/expertise' },
+    { name: 'Work', href: '/work' },
   ];
 
   useEffect(() => {
@@ -19,23 +21,48 @@ export default function Navbar() {
     const progress = progressRef.current;
     if (!header) return;
 
-    const st = ScrollTrigger.create({
-      start: 0,
-      end: 'max',
-      onUpdate: (s) => {
-        const y = s.scroll();
-        header.classList.toggle('is-scrolled', y > 8);
-        header.classList.toggle(
-          'is-hidden',
-          s.direction === 1 && y > 320 && !document.documentElement.classList.contains('menu-open')
+    const ctx = gsap.context(() => {
+      // Coordinated Page Entrance Sequence for Navbar
+      if (!isReducedMotion()) {
+        const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+        tl.fromTo(
+          header,
+          { opacity: 0, y: -16 },
+          { opacity: 1, y: 0, duration: 0.6 }
+        )
+        .fromTo(
+          '.brand',
+          { opacity: 0, x: -14 },
+          { opacity: 1, x: 0, duration: 0.5 },
+          '-=0.45'
+        )
+        .fromTo(
+          '.nav li',
+          { opacity: 0, y: -10 },
+          { opacity: 1, y: 0, stagger: 0.05, duration: 0.45 },
+          '-=0.35'
         );
-        if (progress) {
-          gsap.set(progress, { scaleX: s.progress });
-        }
-      },
-    });
+      }
 
-    return () => st.kill();
+      // ScrollTrigger for sticky state & reading progress
+      ScrollTrigger.create({
+        start: 0,
+        end: 'max',
+        onUpdate: (s) => {
+          const y = s.scroll();
+          header.classList.toggle('is-scrolled', y > 8);
+          header.classList.toggle(
+            'is-hidden',
+            s.direction === 1 && y > 320 && !document.documentElement.classList.contains('menu-open')
+          );
+          if (progress) {
+            gsap.set(progress, { scaleX: s.progress });
+          }
+        },
+      });
+    }, headerRef);
+
+    return () => ctx.revert();
   }, []);
 
   const toggleMobileMenu = () => {
@@ -49,6 +76,12 @@ export default function Navbar() {
     document.documentElement.classList.remove('menu-open');
   };
 
+  const handleNavClick = (e, href) => {
+    e.preventDefault();
+    closeMenu();
+    navigate(href);
+  };
+
   return (
     <>
       <header ref={headerRef} className="site-header">
@@ -56,9 +89,9 @@ export default function Navbar() {
           {/* Brand Logo */}
           <a 
             className="brand" 
-            href="#top" 
+            href="/" 
             aria-label="Zivaro Global Research — Home"
-            onClick={closeMenu}
+            onClick={(e) => handleNavClick(e, '/')}
           >
             <img 
               src="/assets/img/logo-dark-sm.png" 
@@ -76,7 +109,11 @@ export default function Navbar() {
             <ul>
               {navLinks.map((link) => (
                 <li key={link.name}>
-                  <a href={link.href} onClick={closeMenu}>
+                  <a 
+                    href={link.href} 
+                    className={currentPath === link.href ? 'is-active' : ''}
+                    onClick={(e) => handleNavClick(e, link.href)}
+                  >
                     {link.name}
                   </a>
                 </li>
@@ -84,9 +121,9 @@ export default function Navbar() {
               <li>
                 <a 
                   className="btn btn-primary btn-sm" 
-                  href="#contact" 
+                  href="/contact" 
                   data-magnetic
-                  onClick={closeMenu}
+                  onClick={(e) => handleNavClick(e, '/contact')}
                 >
                   Contact Us
                 </a>
@@ -117,11 +154,20 @@ export default function Navbar() {
       {/* Mobile Menu Drawer */}
       <div className={`mobile-menu ${mobileMenuOpen ? 'block' : 'hidden'}`} id="mobile-menu">
         {navLinks.map((link) => (
-          <a key={link.name} href={link.href} onClick={closeMenu}>
+          <a 
+            key={link.name} 
+            href={link.href} 
+            className={currentPath === link.href ? 'is-active' : ''}
+            onClick={(e) => handleNavClick(e, link.href)}
+          >
             {link.name}
           </a>
         ))}
-        <a className="btn btn-primary" href="#contact" onClick={closeMenu}>
+        <a 
+          className="btn btn-primary" 
+          href="/contact" 
+          onClick={(e) => handleNavClick(e, '/contact')}
+        >
           Contact Us
         </a>
       </div>

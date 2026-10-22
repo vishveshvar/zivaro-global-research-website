@@ -83,13 +83,13 @@ export default function Leadership() {
           <article className="person">
             <div className="img" data-wipe>
               <img
-                src="./assets/img/founder-anil.jpg"
+                src="/assets/img/founder-anil.jpg"
                 alt="Anil V B, Co-Founder and Director"
                 width="800"
                 height="800"
                 loading="lazy"
                 onError={(e) => {
-                  e.currentTarget.src = './assests/founder-anil.jpg';
+                  e.currentTarget.src = '/assests/founder-anil.jpg';
                 }}
               />
             </div>
@@ -109,13 +109,13 @@ export default function Leadership() {
           <article className="person">
             <div className="img" data-wipe>
               <img
-                src="./assets/img/founder-manzoor.jpg"
+                src="/assets/img/founder-manzoor.jpg"
                 alt="Manzoor Rahman, Co-Founder and Director"
                 width="400"
                 height="400"
                 loading="lazy"
                 onError={(e) => {
-                  e.currentTarget.src = './assests/founder-manzoor.jpg';
+                  e.currentTarget.src = '/assests/founder-manzoor.jpg';
                 }}
               />
             </div>

@@ -53,13 +53,13 @@ export default function Cursor() {
       const r = btn.getBoundingClientRect();
       const x = (e.clientX - (r.left + r.width / 2)) * 0.32;
       const y = (e.clientY - (r.top + r.height / 2)) * 0.32;
-      gsap.to(btn, { x, y, duration: 0.5, ease: 'power3.out' });
+      gsap.to(btn, { x, y, duration: 0.5, ease: 'power3.out', overwrite: 'auto' });
     };
 
     const handleMagneticLeave = (e) => {
       const btn = e.target.closest('[data-magnetic]');
       if (!btn) return;
-      gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: 'power3.out' });
+      gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: 'power3.out', overwrite: 'auto' });
     };
 
     document.addEventListener('mousemove', handleMagneticMove);

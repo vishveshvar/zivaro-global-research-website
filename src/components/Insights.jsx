@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, ArrowRight, X, Clock, Calendar } from 'lucide-react';
 import { gsap, ScrollTrigger, Draggable, isReducedMotion } from '../utils/gsap';
+import { handleCardMouseEnter, handleCardMouseMove, handleCardMouseLeave } from '../utils/cardHover';
 
 export default function Insights() {
   const [selectedInsight, setSelectedInsight] = useState(null);
+  const sectionRef = useRef(null);
   const wrapRef = useRef(null);
   const trackRef = useRef(null);
 
@@ -13,7 +15,8 @@ export default function Insights() {
       k: 'Healthcare & Life Sciences',
       title: 'Digital Health & Healthcare Delivery',
       summary: 'Evaluating systemic shifts in remote diagnostics, decentralized patient monitoring, and regulatory compliance hurdles facing institutional healthcare providers.',
-      image: './assests/insight-digital-health.jpg',
+      image: '/assets/img/insight-digital-health.jpg',
+      fallbackImage: '/assests/insight-digital-health.jpg',
       num1: '68%',
       lbl1: 'Hospital networks reporting data silos',
       num2: '34%',
@@ -32,7 +35,8 @@ Our field research across European and Asian metropolitan providers underscores 
       k: 'Global Trade & Operations',
       title: 'Global Supply Chain Evolution',
       summary: 'Mapping structural realignments, nearshoring dynamics, and inventory buffer strategies across key industrial freight and manufacturing corridors.',
-      image: './assests/insight-supply-chain.jpg',
+      image: '/assets/img/insight-supply-chain.jpg',
+      fallbackImage: '/assests/insight-supply-chain.jpg',
       num1: '+18d',
       lbl1: 'Expanded safety stock buffer',
       num2: '5 Hubs',
@@ -51,7 +55,8 @@ Key empirical findings from our cross-border logistics study:
       k: 'Consumer Analytics',
       title: 'Modern Consumer Behavior Paradigms',
       summary: 'Decoding changing discretionary expenditure patterns, omnichannel brand discovery friction, and generational loyalty fragmentation.',
-      image: './assests/insight-consumer-behavior.jpg',
+      image: '/assets/img/insight-consumer-behavior.jpg',
+      fallbackImage: '/assests/insight-consumer-behavior.jpg',
       num1: '42%',
       lbl1: 'In-store digital price checks',
       num2: '3x',
@@ -86,67 +91,118 @@ Our multi-market consumer sentiment tracker reveals:
     const car = trackRef.current;
     if (!car || !carWrap) return;
 
-    const cards = Array.from(car.querySelectorAll('.case'));
-    const step = () => (cards.length > 1 ? cards[1].offsetLeft - cards[0].offsetLeft : 400);
-    const bounds = () => ({
-      minX: Math.min(0, carWrap.clientWidth - car.scrollWidth),
-      maxX: 0,
-    });
-
+    const reduce = isReducedMotion();
     let dragInstance = null;
-    if (Draggable) {
-      dragInstance = Draggable.create(car, {
-        type: 'x',
-        bounds: bounds(),
-        edgeResistance: 0.75,
-        snap: {
-          x: (v) => {
-            const s = step();
-            return Math.round(v / s) * s;
-          },
-        },
-        cursor: 'grab',
-        activeCursor: 'grabbing',
-      })[0];
-    }
 
-    const go = (dir) => {
-      if (!dragInstance) return;
-      const b = bounds();
-      const x = gsap.getProperty(car, 'x');
-      const target = Math.max(b.minX, Math.min(b.maxX, Math.round((x + dir * -step()) / step()) * step()));
-      gsap.to(car, {
-        x: target,
-        duration: 0.7,
-        ease: 'power3.out',
-        onUpdate: () => dragInstance.update(),
+    const ctx = gsap.context(() => {
+      // Progressive ScrollTrigger reveals
+      if (!reduce) {
+        gsap.fromTo(
+          '.section-head > *',
+          { opacity: 0, y: 22 },
+          {
+            opacity: 1,
+            y: 0,
+            stagger: 0.1,
+            duration: 0.75,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: '.section-head',
+              start: 'top 85%',
+              once: true,
+            },
+          }
+        );
+
+        gsap.fromTo(
+          '.case',
+          { opacity: 0, y: 32 },
+          {
+            opacity: 1,
+            y: 0,
+            stagger: 0.1,
+            duration: 0.85,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: carWrap,
+              start: 'top 85%',
+              once: true,
+            },
+          }
+        );
+      }
+
+      const cards = Array.from(car.querySelectorAll('.case'));
+      const step = () => (cards.length > 1 ? cards[1].offsetLeft - cards[0].offsetLeft : 400);
+      const bounds = () => ({
+        minX: Math.min(0, carWrap.clientWidth - car.scrollWidth),
+        maxX: 0,
       });
-    };
 
-    const prevBtn = carWrap.parentElement.querySelector('.car-prev');
-    const nextBtn = carWrap.parentElement.querySelector('.car-next');
+      if (Draggable) {
+        dragInstance = Draggable.create(car, {
+          type: 'x',
+          bounds: bounds(),
+          edgeResistance: 0.75,
+          snap: {
+            x: (v) => {
+              const s = step();
+              return Math.round(v / s) * s;
+            },
+          },
+          cursor: 'grab',
+          activeCursor: 'grabbing',
+        })[0];
+      }
 
-    const handlePrev = () => go(-1);
-    const handleNext = () => go(1);
+      const go = (dir) => {
+        if (!dragInstance) return;
+        const b = bounds();
+        const x = gsap.getProperty(car, 'x');
+        const target = Math.max(b.minX, Math.min(b.maxX, Math.round((x + dir * -step()) / step()) * step()));
+        gsap.to(car, {
+          x: target,
+          duration: 0.7,
+          ease: 'power3.out',
+          onUpdate: () => dragInstance.update(),
+        });
+      };
 
-    if (prevBtn) prevBtn.addEventListener('click', handlePrev);
-    if (nextBtn) nextBtn.addEventListener('click', handleNext);
+      const prevBtn = carWrap.parentElement.querySelector('.car-prev');
+      const nextBtn = carWrap.parentElement.querySelector('.car-next');
 
-    const handleResize = () => {
-      if (dragInstance) dragInstance.applyBounds(bounds());
-    };
-    window.addEventListener('resize', handleResize);
+      const handlePrev = () => go(-1);
+      const handleNext = () => go(1);
 
-    return () => {
-      if (prevBtn) prevBtn.removeEventListener('click', handlePrev);
-      if (nextBtn) nextBtn.removeEventListener('click', handleNext);
-      window.removeEventListener('resize', handleResize);
-      if (dragInstance) dragInstance.kill();
-    };
+      if (prevBtn) {
+        prevBtn.addEventListener('click', handlePrev);
+        prevBtn.addEventListener('mouseenter', () => gsap.to(prevBtn, { scale: 1.1, duration: 0.25, ease: 'power2.out', overwrite: 'auto' }));
+        prevBtn.addEventListener('mouseleave', () => gsap.to(prevBtn, { scale: 1, duration: 0.25, ease: 'power2.out', overwrite: 'auto' }));
+      }
+      if (nextBtn) {
+        nextBtn.addEventListener('click', handleNext);
+        nextBtn.addEventListener('mouseenter', () => gsap.to(nextBtn, { scale: 1.1, duration: 0.25, ease: 'power2.out', overwrite: 'auto' }));
+        nextBtn.addEventListener('mouseleave', () => gsap.to(nextBtn, { scale: 1, duration: 0.25, ease: 'power2.out', overwrite: 'auto' }));
+      }
+
+      const handleResize = () => {
+        if (dragInstance) dragInstance.applyBounds(bounds());
+      };
+      window.addEventListener('resize', handleResize);
+
+      return () => {
+        if (prevBtn) prevBtn.removeEventListener('click', handlePrev);
+        if (nextBtn) nextBtn.removeEventListener('click', handleNext);
+        window.removeEventListener('resize', handleResize);
+        if (dragInstance) dragInstance.kill();
+      };
+    }, sectionRef);
+
+    return () => ctx.revert();
   }, []);
 
   return (
-    <section className="section work" id="work">
+    <section className="section work" id="work" ref={sectionRef}>
       <div className="wrap">
         
         {/* Section Header with Navigation Controls */}
@@ -174,7 +230,10 @@ Our multi-market consumer sentiment tracker reveals:
           {cases.map((item) => (
             <article 
               key={item.id} 
-              className="case"
+              className="case card-glow"
+              onMouseEnter={handleCardMouseEnter}
+              onMouseMove={handleCardMouseMove}
+              onMouseLeave={handleCardMouseLeave}
               onClick={() => setSelectedInsight(item)}
             >
               <div className="img">

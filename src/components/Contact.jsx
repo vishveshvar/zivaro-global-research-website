@@ -25,20 +25,30 @@ export default function Contact() {
 
     const ctx = gsap.context(() => {
       if (ctaRef.current) {
-        gsap.fromTo(
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: ctaRef.current,
+            start: 'top 88%',
+            once: true,
+          },
+        });
+
+        tl.fromTo(
           ctaRef.current,
-          { y: 28, opacity: 0.7 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.75,
-            ease: 'power3.out',
-            scrollTrigger: {
-              trigger: ctaRef.current,
-              start: 'top 94%',
-              once: true,
-            },
-          }
+          { y: 32, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.85, ease: 'power3.out' }
+        )
+        .fromTo(
+          '.meta > div',
+          { opacity: 0, y: 14 },
+          { opacity: 1, y: 0, stagger: 0.07, duration: 0.55, ease: 'power2.out' },
+          '-=0.4'
+        )
+        .fromTo(
+          '.form .field',
+          { opacity: 0, y: 14 },
+          { opacity: 1, y: 0, stagger: 0.07, duration: 0.55, ease: 'power2.out' },
+          '-=0.4'
         );
       }
     }, sectionRef);

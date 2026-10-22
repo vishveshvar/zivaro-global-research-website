@@ -120,49 +120,59 @@ export default function Hero() {
       raf = requestAnimationFrame(draw);
     }
 
-    // 3. 3D PERSPECTIVE TILT ON BOARD
-    const board = boardRef.current;
-    if (board && fine && !reduce) {
-      gsap.set(board, { transformPerspective: 1400 });
-      const brx = gsap.quickTo(board, 'rotationX', { duration: 0.9, ease: 'power3' });
-      const bry = gsap.quickTo(board, 'rotationY', { duration: 0.9, ease: 'power3' });
-      const glowX = gsap.quickTo('.hero-glow', 'x', { duration: 1.4, ease: 'power3' });
-      const glowY = gsap.quickTo('.hero-glow', 'y', { duration: 1.4, ease: 'power3' });
+    // GSAP SCOPED CONTEXT
+    let handleBoardMove, handleBoardLeave;
+    const ctxGSAP = gsap.context(() => {
+      // 3. 3D PERSPECTIVE TILT ON BOARD
+      const board = boardRef.current;
+      if (board && fine && !reduce) {
+        gsap.set(board, { transformPerspective: 1400 });
+        const brx = gsap.quickTo(board, 'rotationX', { duration: 0.9, ease: 'power3' });
+        const bry = gsap.quickTo(board, 'rotationY', { duration: 0.9, ease: 'power3' });
+        const glowX = gsap.quickTo('.hero-glow', 'x', { duration: 1.4, ease: 'power3' });
+        const glowY = gsap.quickTo('.hero-glow', 'y', { duration: 1.4, ease: 'power3' });
 
-      const handleBoardMove = (e) => {
-        const r = hero.getBoundingClientRect();
-        const px = (e.clientX - r.left) / r.width - 0.5;
-        const py = (e.clientY - r.top) / r.height - 0.5;
-        bry(px * 7);
-        brx(-py * 5);
-        glowX(px * 60);
-        glowY(py * 40);
-      };
+        handleBoardMove = (e) => {
+          const r = hero.getBoundingClientRect();
+          const px = (e.clientX - r.left) / r.width - 0.5;
+          const py = (e.clientY - r.top) / r.height - 0.5;
+          bry(px * 7);
+          brx(-py * 5);
+          glowX(px * 60);
+          glowY(py * 40);
 
-      const handleBoardLeave = () => {
-        brx(0);
-        bry(0);
-        glowX(0);
-        glowY(0);
-      };
+          const br = board.getBoundingClientRect();
+          board.style.setProperty('--mx', `${(e.clientX - br.left).toFixed(1)}px`);
+          board.style.setProperty('--my', `${(e.clientY - br.top).toFixed(1)}px`);
+          board.style.setProperty('--glow-opacity', '1');
+        };
 
-      hero.addEventListener('mousemove', handleBoardMove);
-      hero.addEventListener('mouseleave', handleBoardLeave);
-    }
+        handleBoardLeave = () => {
+          brx(0);
+          bry(0);
+          glowX(0);
+          glowY(0);
+          board.style.setProperty('--glow-opacity', '0');
+        };
 
-    // 4. HERO ENTRANCE TIMELINE
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-    if (!reduce) {
-      tl.fromTo('.hero-eyebrow-container', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 })
-        .fromTo('.hero-h1', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9 }, '-=0.5')
-        .fromTo('.hero-lead-text', { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, '-=0.6')
-        .fromTo('.hero-actions > *', { y: 14, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.08, duration: 0.7 }, '-=0.5')
-        .fromTo('.hero-stats > li', { y: 12, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.07, duration: 0.7 }, '-=0.4')
-        .to('.hl', { backgroundSize: '100% .14em', duration: 0.8, ease: 'power3.inOut' }, '-=0.5')
-        .fromTo('.bcard-main', { opacity: 0, y: 44, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 1.1, ease: 'power4.out' }, 0.45);
+        hero.addEventListener('mousemove', handleBoardMove);
+        hero.addEventListener('mouseleave', handleBoardLeave);
+      }
 
-      gsap.to('.bcard-main', { y: -6, duration: 3.4, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: 2.6 });
-    }
+      // 4. HERO ENTRANCE TIMELINE
+      if (!reduce) {
+        const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+        tl.fromTo('.hero-eyebrow-container', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 })
+          .fromTo('.hero-h1', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9 }, '-=0.5')
+          .fromTo('.hero-lead-text', { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, '-=0.6')
+          .fromTo('.hero-actions > *', { y: 14, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.08, duration: 0.7 }, '-=0.5')
+          .fromTo('.hero-stats > li', { y: 12, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.07, duration: 0.7 }, '-=0.4')
+          .to('.hl', { backgroundSize: '100% .14em', duration: 0.8, ease: 'power3.inOut' }, '-=0.5')
+          .fromTo('.bcard-main', { opacity: 0, y: 44, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 1.1, ease: 'power4.out' }, 0.45);
+
+        gsap.to('.bcard-main', { y: -6, duration: 3.4, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: 2.6 });
+      }
+    }, heroRef);
 
     return () => {
       window.removeEventListener('resize', resize);
@@ -170,8 +180,12 @@ export default function Hero() {
         hero.removeEventListener('mousemove', handleMouseMove);
         hero.removeEventListener('mouseleave', handleMouseLeave);
       }
+      if (handleBoardMove) {
+        hero.removeEventListener('mousemove', handleBoardMove);
+        hero.removeEventListener('mouseleave', handleBoardLeave);
+      }
       cancelAnimationFrame(raf);
-      tl.kill();
+      ctxGSAP.revert();
     };
   }, []);
 

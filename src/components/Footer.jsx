@@ -27,13 +27,13 @@ export default function Footer() {
           <div>
             <a href="#top" aria-label="Zivaro Global Research" style={{ display: 'inline-block', marginBottom: '16px' }}>
               <img
-                src="./assets/img/logo-dark-sm.png"
+                src="/assets/img/logo-dark-sm.png"
                 alt="Zivaro Global Research"
                 width="600"
                 height="186"
                 style={{ height: '32px', width: 'auto' }}
                 onError={(e) => {
-                  e.currentTarget.src = './assests/logo-dark-sm.png';
+                  e.currentTarget.src = '/assests/logo-dark-sm.png';
                 }}
               />
             </a>

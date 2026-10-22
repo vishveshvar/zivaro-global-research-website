@@ -3,6 +3,7 @@ import { gsap, isReducedMotion } from '../utils/gsap';
 
 export default function Industries() {
   const [activePanel, setActivePanel] = useState(0);
+  const sectionRef = useRef(null);
   const marqueeRef = useRef(null);
 
   const practicePanels = [
@@ -12,7 +13,8 @@ export default function Industries() {
       title: 'Healthcare & Pharmaceuticals',
       headline: 'Across the Clinical & Care Pathway',
       description: 'Navigating clinical innovation, patient journey dynamics, healthcare regulatory pathways, and payer reimbursement environments.',
-      image: './assests/clinical research laboratory.jpg',
+      image: '/assets/img/clinical research laboratory.jpg',
+      fallbackImage: '/assests/clinical research laboratory.jpg',
       points: [
         'HCP panels & specialist physician recruitment',
         'Pharma, biotech and medical device commercialization',
@@ -25,7 +27,8 @@ export default function Industries() {
       title: 'FMCG & Retail',
       headline: 'Decoding the Omnichannel Buyer',
       description: 'Rapidly shifting point-of-sale paradigms, omnichannel consumer habits, category management, and private label penetration.',
-      image: './assests/FMCG-Retail.jpg',
+      image: '/assets/img/FMCG-Retail.jpg',
+      fallbackImage: '/assests/FMCG-Retail.jpg',
       points: [
         'Brand, advertising and concept testing',
         'Customer experience, loyalty and basket analytics',
@@ -38,7 +41,8 @@ export default function Industries() {
       title: 'B2B Market Intelligence',
       headline: 'High-Stake Decision Makers, Reached',
       description: 'High-stake organizational procurement dynamics, enterprise buying centers, distributor ecosystems, and competitive supply networks.',
-      image: './assests/B2B-Market-Intelligence.jpg',
+      image: '/assets/img/B2B-Market-Intelligence.jpg',
+      fallbackImage: '/assests/B2B-Market-Intelligence.jpg',
       points: [
         'C-suite, functional heads and procurement directors',
         'Distributor and channel partner benchmarking',
@@ -51,7 +55,8 @@ export default function Industries() {
       title: 'Banking & Financial Services',
       headline: 'Capital Dynamics & Digital Trust',
       description: 'Institutional fintech disruptions, retail banking evolution, wealth management behavioral trends, and cross-border payment flows.',
-      image: './assests/Banking-Finance.jpeg',
+      image: '/assets/img/Banking-Finance.jpeg',
+      fallbackImage: '/assests/Banking-Finance.jpeg',
       points: [
         'Retail banking NPS and churn predictors',
         'Cross-border payments and remittance behavior',
@@ -64,7 +69,8 @@ export default function Industries() {
       title: 'Technology & Telecommunications',
       headline: 'Cloud, Infrastructure & AI Adoption',
       description: 'Next-generation cloud infrastructure, enterprise SaaS adoption cycles, 5G monetization, and AI integration roadmaps.',
-      image: './assests/Technology-Telecommunications.jpeg',
+      image: '/assets/img/Technology-Telecommunications.jpeg',
+      fallbackImage: '/assests/Technology-Telecommunications.jpeg',
       points: [
         'Enterprise software evaluation and buying cycles',
         'Telecom infrastructure and 5G enterprise use cases',
@@ -88,33 +94,69 @@ export default function Industries() {
   ];
 
   useEffect(() => {
+    const reduce = isReducedMotion();
     const marquee = marqueeRef.current;
-    if (!marquee || isReducedMotion()) return;
 
-    const track = marquee.querySelector('.marquee-track');
-    if (!track) return;
+    const ctx = gsap.context(() => {
+      if (!reduce) {
+        gsap.fromTo(
+          '.section-head > *',
+          { opacity: 0, y: 20 },
+          {
+            opacity: 1,
+            y: 0,
+            stagger: 0.08,
+            duration: 0.75,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: '.section-head',
+              start: 'top 85%',
+              once: true,
+            },
+          }
+        );
 
-    const tween = gsap.fromTo(
-      track,
-      { xPercent: 0 },
-      { xPercent: -50, duration: 42, ease: 'none', repeat: -1 }
-    );
+        gsap.fromTo(
+          '.panels > .panel',
+          { opacity: 0, y: 28 },
+          {
+            opacity: 1,
+            y: 0,
+            stagger: 0.07,
+            duration: 0.8,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: '.panels',
+              start: 'top 85%',
+              once: true,
+            },
+          }
+        );
+      }
 
-    const handleMouseEnter = () => gsap.to(tween, { timeScale: 0.25, duration: 0.5 });
-    const handleMouseLeave = () => gsap.to(tween, { timeScale: 1, duration: 0.5 });
+      if (marquee && !reduce) {
+        const track = marquee.querySelector('.marquee-track');
+        if (track) {
+          const tween = gsap.fromTo(
+            track,
+            { xPercent: 0 },
+            { xPercent: -50, duration: 42, ease: 'none', repeat: -1 }
+          );
 
-    marquee.addEventListener('mouseenter', handleMouseEnter);
-    marquee.addEventListener('mouseleave', handleMouseLeave);
+          const handleMouseEnter = () => gsap.to(tween, { timeScale: 0.25, duration: 0.5 });
+          const handleMouseLeave = () => gsap.to(tween, { timeScale: 1, duration: 0.5 });
 
-    return () => {
-      marquee.removeEventListener('mouseenter', handleMouseEnter);
-      marquee.removeEventListener('mouseleave', handleMouseLeave);
-      tween.kill();
-    };
+          marquee.addEventListener('mouseenter', handleMouseEnter);
+          marquee.addEventListener('mouseleave', handleMouseLeave);
+        }
+      }
+    }, sectionRef);
+
+    return () => ctx.revert();
   }, []);
 
   return (
-    <section className="section section-soft has-marquee" id="expertise">
+    <section className="section section-soft has-marquee" id="expertise" ref={sectionRef}>
       <div className="wrap">
         
         {/* Section Header */}
@@ -147,6 +189,11 @@ export default function Industries() {
                   width="1200"
                   height="800"
                   loading="lazy"
+                  onError={(e) => {
+                    if (panel.fallbackImage) {
+                      e.currentTarget.src = panel.fallbackImage;
+                    }
+                  }}
                 />
 
                 {/* Collapsed Tab */}

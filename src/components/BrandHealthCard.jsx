@@ -225,7 +225,7 @@ export default function BrandHealthCard() {
   }
 
   return (
-    <div ref={cardRef} className="bcard bcard-main">
+    <div ref={cardRef} className="bcard bcard-main card-glow">
       {/* Card Header with Status Badge */}
       <div className="bhead">
         <div>

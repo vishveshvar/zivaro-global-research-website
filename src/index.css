@@ -2535,6 +2535,71 @@ button.pill.is-active {
   }
 }
 
+/* ==========================================================================
+   PREMIUM CARD LIGHTING & BORDER GLOW (PART 2 UPGRADE)
+   ========================================================================== */
+
+.card-glow {
+  position: relative;
+  isolation: isolate;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* 1. Pointer-tracking border glow - follows exact rounded perimeter */
+.card-glow::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: radial-gradient(
+    320px circle at var(--mx, -9999px) var(--my, -9999px),
+    rgba(101, 191, 255, 0.95),
+    rgba(0, 163, 224, 0.45) 35%,
+    transparent 70%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: var(--glow-opacity, 0);
+  transition: opacity 0.4s ease;
+  filter: drop-shadow(0 0 6px rgba(101, 191, 255, 0.4));
+  z-index: 10;
+}
+
+/* 2. Soft internal radial spotlight */
+.card-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    420px circle at var(--mx, -9999px) var(--my, -9999px),
+    rgba(101, 191, 255, 0.055),
+    rgba(0, 163, 224, 0.02) 45%,
+    transparent 80%
+  );
+  pointer-events: none;
+  opacity: var(--glow-opacity, 0);
+  transition: opacity 0.45s ease;
+  z-index: 0;
+}
+
+/* Ensure inner card content sits properly between spotlight and border */
+.card-glow > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Enhanced 3D shadow depth and refined border glow on hover */
+.card-glow:hover {
+  box-shadow: 0 22px 45px -14px rgba(7, 27, 51, 0.12), 0 0 24px -4px rgba(101, 191, 255, 0.18) !important;
+  border-color: rgba(101, 191, 255, 0.28) !important;
+}
+
 /* Reduced motion safety */
 @media (prefers-reduced-motion: reduce) {
 
