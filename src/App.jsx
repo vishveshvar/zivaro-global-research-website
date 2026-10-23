@@ -7,6 +7,7 @@ import Industries from './components/Industries';
 import Methodology from './components/Methodology';
 import Insights from './components/Insights';
 import Leadership from './components/Leadership';
+import Testimonials from './components/Testimonials';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import { ScrollTrigger } from './utils/gsap';
@@ -115,6 +116,9 @@ function AppContent() {
 
             {/* 8. Leadership Team — Founder-Led Directorship */}
             <Leadership />
+
+            {/* 8.5 Client Testimonials — Animated Infinite Moving Cards */}
+            <Testimonials />
 
             {/* 9. Direct Engagement & Inquiry Brief Form */}
             <Contact />

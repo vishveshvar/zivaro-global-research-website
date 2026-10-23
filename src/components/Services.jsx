@@ -1,269 +1,133 @@
-import React, { useEffect, useRef } from 'react';
-import { gsap, ScrollTrigger, isReducedMotion } from '../utils/gsap';
+import React from 'react';
+import { StickyScroll } from './ui/sticky-scroll-reveal';
+
+const SERVICES_DATA = [
+  {
+    title: 'Market Entry Studies',
+    description: 'Assess new markets, understand local regulations, and identify growth opportunities before entering a new region.',
+    image: '/assets/img/Market Entry Studies.jpg',
+    alt: 'Market Entry Studies — Assessing new markets, regulations, and growth opportunities',
+    background: '#FFFFFF', // Warm white
+    panelBg: '#F8FAFC',
+    accent: '#65BFFF',
+  },
+  {
+    title: 'Brand Awareness & Perception',
+    description: 'Discover how customers see your brand and how it compares with competitors.',
+    image: '/assets/img/Brand Awareness.jpg',
+    alt: 'Brand Awareness & Perception — Discovering customer brand perception and competitive benchmarks',
+    background: '#EAF4FC', // Pale ice blue
+    panelBg: '#E1EEF8',
+    accent: '#071B33',
+  },
+  {
+    title: 'Consumer Satisfaction',
+    description: 'Understand customer experiences, identify pain points, and improve satisfaction and retention.',
+    image: '/assets/img/Consumer Satisfaction.jpg',
+    alt: 'Consumer Satisfaction — Analyzing customer journeys, pain points, and retention drivers',
+    background: '#F1F5F9', // Subtle cool grey
+    panelBg: '#E9EFF5',
+    accent: '#65BFFF',
+  },
+  {
+    title: 'Product Concept Testing',
+    description: 'Test new ideas and understand customer needs before launch.',
+    image: '/assets/img/Product Concept Testing.jpg',
+    alt: 'Product Concept Testing — Validating new product concepts and customer needs before launch',
+    background: '#F8FAFC', // Soft off-white
+    panelBg: '#EDF2F7',
+    accent: '#8293A8',
+  },
+  {
+    title: 'Competitive Intelligence',
+    description: 'Understand competitors, market trends, and opportunities to stand out.',
+    image: '/assets/img/Competitive Intelligence.jpg',
+    alt: 'Competitive Intelligence — Benchmarking competitors, market signals, and strategic positioning',
+    background: '#F7F9FC', // Soft off-white
+    panelBg: '#EEF2F6',
+    accent: '#071B33',
+  },
+  {
+    title: 'Pricing & Positioning',
+    description: 'Evaluate pricing strategies and find the right position in your market.',
+    image: '/assets/img/Pricing & Positioning.jpg',
+    alt: 'Pricing & Positioning — Evaluating pricing elasticity and optimal market positioning',
+    background: '#E6F2FB', // Pale ice blue
+    panelBg: '#DCEBF7',
+    accent: '#65BFFF',
+  },
+  {
+    title: 'Data Analytics & Reporting',
+    description: 'Turn research data into clear findings and practical business decisions.',
+    image: '/assets/img/Data Analytics & Reporting.jpg',
+    alt: 'Data Analytics & Reporting — Transforming research data into actionable findings and decisions',
+    background: '#F1F5F9', // Subtle cool grey
+    panelBg: '#EAEFF5',
+    accent: '#071B33',
+  },
+  {
+    title: 'Tracking & Panel Research',
+    description: 'Track changing customer opinions, behaviours, and market trends over time.',
+    image: '/assets/img/Tracking & Panel Research.jpg',
+    alt: 'Tracking & Panel Research — Tracking longitudinal customer sentiment and panel trends over time',
+    background: '#EAF4FC', // Pale ice blue
+    panelBg: '#E0EEF8',
+    accent: '#65BFFF',
+  },
+];
+
+function ServiceVisualPanel({ item }) {
+  return (
+    <div
+      className="relative w-full h-full flex items-center justify-center p-2.5 sm:p-3 rounded-2xl overflow-hidden"
+      style={{
+        background: item.panelBg || '#FFFFFF',
+      }}
+    >
+      <div className="relative w-full h-full overflow-hidden rounded-xl shadow-sm">
+        <img
+          src={item.image}
+          alt={item.alt}
+          className="w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-102"
+          loading="eager"
+        />
+      </div>
+    </div>
+  );
+}
+
+const content = SERVICES_DATA.map((item) => ({
+  title: item.title,
+  description: item.description,
+  background: item.background,
+  content: <ServiceVisualPanel item={item} />,
+}));
 
 export default function Services() {
-  const journeyWrapRef = useRef(null);
-
-  const capabilities = [
-    {
-      num: '01',
-      title: 'Market Entry Studies',
-      description: 'Comprehensive analysis to guide successful market expansion and entry strategies.',
-      image: './assests/B2B-Market-Intelligence.jpg',
-      tags: ['Target feasibility', 'Barrier mapping', 'Vulnerability index'],
-      side: 'left',
-    },
-    {
-      num: '02',
-      title: 'Brand Awareness & Perception',
-      description: 'Measure and understand how your brand is perceived in the competitive marketplace.',
-      image: './assests/hero-abstract-network.jpg',
-      tags: ['Brand equity', 'Perception maps', 'Recall index'],
-      side: 'right',
-    },
-    {
-      num: '03',
-      title: 'Consumer Behavior & Satisfaction',
-      description: 'Gain valuable insights into customer experiences, journeys, and satisfaction levels.',
-      image: './assests/insight-consumer-behavior.jpg',
-      tags: ['Journey mapping', 'NPS & CSAT', 'Ethnography'],
-      side: 'left',
-    },
-    {
-      num: '04',
-      title: 'Product & Concept Testing',
-      description: 'Validate product concepts and optimize user experiences before market launch.',
-      image: './assests/Technology-Telecommunications.jpeg',
-      tags: ['Concept validation', 'Conjoint pricing', 'Usability'],
-      side: 'right',
-    },
-    {
-      num: '05',
-      title: 'Competitive Intelligence',
-      description: 'Stay ahead with comprehensive analysis of your global competitive landscape.',
-      image: './assests/Banking-Finance.jpeg',
-      tags: ['Competitor matrix', 'Gap analysis', 'Defense strategy'],
-      side: 'left',
-    },
-    {
-      num: '06',
-      title: 'Data Analytics & Reporting',
-      description: 'Transform raw data into actionable business intelligence with advanced analytics.',
-      image: './assests/insight-digital-health.jpg',
-      tags: ['Predictive models', 'Dashboards', 'Executive roadmaps'],
-      side: 'right',
-    },
-  ];
-
-  useEffect(() => {
-    const wrap = journeyWrapRef.current;
-    if (!wrap) return;
-
-    const svg = wrap.querySelector('.journey-svg');
-    const track = wrap.querySelector('.j-track');
-    const draw = wrap.querySelector('.j-draw');
-    const head = wrap.querySelector('.j-head');
-    if (!svg || !track || !draw || !head) return;
-
-    const items = Array.from(wrap.querySelectorAll('.j-item'));
-    const nodes = items.map((it) => it.querySelector('.j-node'));
-
-    const reduce = isReducedMotion();
-    let L = 1;
-    let thresholds = [];
-    let st = null;
-
-    // Direct render function driven by normalized scroll progress (0 to 1)
-    const update = (progress) => {
-      const p = Math.max(0, Math.min(1, progress));
-      const drawn = L * p;
-      draw.style.strokeDashoffset = `${L - drawn}`;
-
-      try {
-        const pt = draw.getPointAtLength(Math.min(L, Math.max(0, drawn)));
-        head.setAttribute('transform', `translate(${pt.x.toFixed(1)} ${pt.y.toFixed(1)})`);
-      } catch (e) {
-        // fallback
-      }
-
-      items.forEach((it, i) => {
-        const shouldBeLit = drawn >= (thresholds[i] ?? 0);
-        it.classList.toggle('is-lit', shouldBeLit);
-      });
-    };
-
-    const build = () => {
-      const r = wrap.getBoundingClientRect();
-      const W = wrap.offsetWidth;
-      const H = wrap.offsetHeight;
-      if (!W || !H) return;
-
-      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-
-      const pts = nodes.map((n) => {
-        if (!n) return { x: W / 2, y: 0 };
-        const b = n.getBoundingClientRect();
-        return {
-          x: b.left - r.left + b.width / 2,
-          y: b.top - r.top + b.height / 2,
-        };
-      });
-
-      if (pts.length === 0) return;
-
-      let prev = { x: pts[0].x, y: 0 };
-      let d = `M${prev.x} 0`;
-      const lens = [];
-
-      pts.forEach((p) => {
-        const dy = p.y - prev.y;
-        d += ` C${prev.x} ${prev.y + dy * 0.55} ${p.x} ${p.y - dy * 0.55} ${p.x} ${p.y}`;
-        track.setAttribute('d', d);
-        lens.push(track.getTotalLength());
-        prev = p;
-      });
-
-      d += ` L${prev.x} ${H}`;
-      track.setAttribute('d', d);
-      draw.setAttribute('d', d);
-      L = draw.getTotalLength();
-      draw.style.strokeDasharray = `${L}`;
-
-      // Progressive reveal thresholds:
-      // Card 01 activates early as the section enters the viewport.
-      // Subsequent cards activate ~25% into their connecting curve segment,
-      // so cards reveal promptly as they enter view without requiring excessive scrolling.
-      thresholds = lens.map((len, i) => {
-        if (i === 0) {
-          return Math.min(len * 0.2, 10);
-        }
-        const prevLen = lens[i - 1];
-        return prevLen + (len - prevLen) * 0.25;
-      });
-
-      if (reduce) {
-        update(1);
-      } else if (st) {
-        update(st.progress);
-      }
-    };
-
-    // Use gsap.context for clean React lifecycle scoping and leak prevention
-    const ctx = gsap.context(() => {
-      build();
-
-      if (!reduce) {
-        st = ScrollTrigger.create({
-          trigger: wrap,
-          start: 'top 82%',
-          end: 'bottom 75%',
-          scrub: 0.25,
-          onUpdate: (self) => {
-            update(self.progress);
-          },
-        });
-
-        // Initialize with current scroll progress
-        update(st.progress);
-      } else {
-        update(1);
-      }
-    }, wrap);
-
-    const onRefreshInit = () => {
-      build();
-    };
-
-    const onResize = () => {
-      build();
-      ScrollTrigger.refresh();
-    };
-
-    ScrollTrigger.addEventListener('refreshInit', onRefreshInit);
-    window.addEventListener('resize', onResize);
-
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => {
-        build();
-        ScrollTrigger.refresh();
-      });
-    }
-
-    return () => {
-      ScrollTrigger.removeEventListener('refreshInit', onRefreshInit);
-      window.removeEventListener('resize', onResize);
-      if (st) st.kill();
-      ctx.revert();
-    };
-  }, []);
-
   return (
-    <section className="section svc" id="services">
-      <div className="wrap">
-
+    <section 
+      className="section svc" 
+      id="services"
+      style={{
+        background: 'var(--bg, #FFFFFF)',
+        position: 'relative',
+        paddingTop: 'clamp(40px, 5vw, 64px)',
+        paddingBottom: 'clamp(40px, 5vw, 64px)',
+      }}
+    >
+      <div className="wrap" style={{ width: '100%' }}>
         {/* Section Header */}
-        <div className="section-head">
+        <div className="section-head" style={{ marginBottom: 'clamp(20px, 3vw, 36px)' }}>
           <div>
             <span className="eyebrow">What We Do</span>
             <h2 className="t1">Our Research Capabilities</h2>
           </div>
         </div>
 
-        {/* Scroll-Drawn Journey Path Container */}
-        <div ref={journeyWrapRef} className="journey">
-          <svg className="journey-svg" aria-hidden="true">
-            <path className="j-track" />
-            <path className="j-draw" />
-            <g className="j-head">
-              <circle className="h2" r="16" />
-              <circle className="h1" r="6" />
-            </g>
-          </svg>
-
-          <ol className="j-list">
-            {capabilities.map((svc) => (
-              <li key={svc.num} className="j-item" data-side={svc.side}>
-                <span className="j-node" aria-hidden="true">
-                  <i />
-                </span>
-
-                <article 
-                  className="j-card card-glow"
-                  onMouseMove={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    e.currentTarget.style.setProperty('--mx', `${(e.clientX - rect.left).toFixed(1)}px`);
-                    e.currentTarget.style.setProperty('--my', `${(e.clientY - rect.top).toFixed(1)}px`);
-                    e.currentTarget.style.setProperty('--glow-opacity', '1');
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.setProperty('--glow-opacity', '0');
-                  }}
-                >
-                  <div className="j-img">
-                    <img
-                      src={svc.image}
-                      alt={svc.title}
-                      width="640"
-                      height="800"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="j-body">
-                    <span className="num">{svc.num}</span>
-                    <h3>{svc.title}</h3>
-                    <p>{svc.description}</p>
-                    <ul className="j-tags">
-                      {svc.tags.map((t, idx) => (
-                        <li key={idx}>{t}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </article>
-              </li>
-            ))}
-          </ol>
+        {/* Aceternity UI Sticky Scroll Reveal Implementation */}
+        <div className="w-full">
+          <StickyScroll content={content} />
         </div>
-
       </div>
     </section>
   );
