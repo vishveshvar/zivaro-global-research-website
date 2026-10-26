@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { gsap, ScrollTrigger, isReducedMotion, isFinePointer } from '../utils/gsap';
 import BrandHealthCard from './BrandHealthCard';
-import ParticleText from './ParticleText';
 
 const CYCLING_SECTORS = [
   'healthcare & life sciences',
@@ -164,13 +163,16 @@ export default function Hero() {
       if (!reduce) {
         const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
         tl.fromTo('.hero-eyebrow-container', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 })
-          .fromTo('.hero-lead-text', { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, '-=0.3')
+          .fromTo('.hero-h1', { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, '-=0.35')
+          .fromTo('.hero-lead-text', { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, '-=0.45')
           .fromTo('.hero-actions > *', { y: 14, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.08, duration: 0.7 }, '-=0.5')
           .fromTo('.hero-stats > li', { y: 12, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.07, duration: 0.7 }, '-=0.4')
           .to('.hl', { backgroundSize: '100% .14em', duration: 0.8, ease: 'power3.inOut' }, '-=0.5')
           .fromTo('.bcard-main', { opacity: 0, y: 44, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 1.1, ease: 'power4.out' }, 0.45);
 
         gsap.to('.bcard-main', { y: -6, duration: 3.4, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: 2.6 });
+      } else {
+        gsap.set('.hl', { backgroundSize: '100% .14em' });
       }
     }, heroRef);
 
@@ -219,49 +221,8 @@ export default function Hero() {
             </span>
           </div>
 
-          <h1 className="t-hero hero-h1" style={{ position: 'relative' }}>
-            <span
-              className="hero-h1-flow"
-              aria-hidden="true"
-              style={{
-                display: 'block',
-                color: 'transparent',
-                userSelect: 'none',
-                pointerEvents: 'none',
-              }}
-            >
-              Understand the <span className="hl" style={{ color: 'transparent' }}>Market</span>. Anticipate What's Next.
-            </span>
-            <ParticleText
-              text="Understand the Market. Anticipate What's Next."
-              className="hero-particle-text"
-              color="var(--navy)"
-              highlightColor="#65BFFF"
-              highlightMode="motion"
-              shape="circle"
-              intro="gather"
-              scatter={140}
-              gatherDuration={1700}
-              stagger={380}
-              clickBurst={true}
-              burstStrength={1}
-              pointerRepel={35}
-              repelRadius={100}
-              idleDrift={0.45}
-              trigger="mount"
-              fontSize="inherit"
-              fontWeight={700}
-              fontFamily="inherit"
-              density={2}
-              particleSize={1.9}
-              glow={true}
-              style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-              }}
-            />
+          <h1 className="t-hero hero-h1">
+            Understand the <span className="hl">Market</span>. Anticipate What's Next.
           </h1>
 
           <p className="lead hero-lead-text">
