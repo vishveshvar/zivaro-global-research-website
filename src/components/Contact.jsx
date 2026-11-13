@@ -61,30 +61,57 @@ export default function Contact() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
     setSubmitting(true);
 
-    const subject = `Research brief from ${formData.name || 'website'} - ${formData.organization || 'General'}`;
-    const body = [
-      `Name: ${formData.name}`,
-      `Email: ${formData.email}`,
-      `Organization: ${formData.organization}`,
-      `Sector: ${formData.sector}`,
-      '',
-      'The Brief:',
-      formData.message,
-    ].join('\n');
-
-    // Mailto fallback
-    window.location.href = `mailto:sales@zivaroresearch.com?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`;
-
-    setTimeout(() => {
+    const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
+    if (!accessKey) {
+      console.error('Web3Forms Configuration Error: VITE_WEB3FORMS_ACCESS_KEY is not configured in environment variables.');
       setSubmitting(false);
-      setSubmitted(true);
-    }, 600);
+      return;
+    }
+
+    try {
+      const formPayload = new FormData(e.target);
+      formPayload.set('access_key', accessKey);
+      formPayload.set('subject', `Research brief from ${formData.name || 'website'} - ${formData.organization || 'General'}`);
+      formPayload.set('from_name', 'Zivaro Global Research Website');
+      formPayload.set('replyto', formData.email);
+      formPayload.set('name', formData.name);
+      formPayload.set('email', formData.email);
+      formPayload.set('organization', formData.organization);
+      formPayload.set('sector', formData.sector);
+      formPayload.set('message', formData.message);
+
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+        },
+        body: formPayload,
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSubmitted(true);
+        setFormData({
+          name: '',
+          email: '',
+          organization: '',
+          sector: 'Healthcare & Pharmaceuticals',
+          message: '',
+        });
+      } else {
+        console.error('Web3Forms submission failed:', data);
+      }
+    } catch (err) {
+      console.error('Web3Forms submission network error:', err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -158,7 +185,7 @@ export default function Contact() {
                   Brief Received Successfully
                 </h3>
                 <p style={{ color: '#B8C4D4', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '24px' }}>
-                  Thank you for submitting your research parameters. Your email app has been opened with your inquiry formatted, and our sector directors will review your timeline and feasibility.
+                  Thank you for submitting your research parameters. Your inquiry has been delivered successfully, and our sector directors will review your timeline and feasibility.
                 </p>
                 <button
                   type="button"
@@ -179,6 +206,14 @@ export default function Contact() {
               </div>
             ) : (
               <form className="form" onSubmit={handleSubmit} noValidate>
+                <input 
+                  type="checkbox" 
+                  name="botcheck" 
+                  className="hidden" 
+                  style={{ display: 'none' }} 
+                  tabIndex={-1} 
+                  autoComplete="off" 
+                />
                 <div className="field">
                   <input
                     id="f-name"

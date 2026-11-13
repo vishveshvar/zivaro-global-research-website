@@ -8,7 +8,8 @@ import {
   CheckCircle2, 
   Send, 
   ArrowRight,
-  ShieldCheck 
+  ShieldCheck,
+  AlertCircle
 } from 'lucide-react';
 
 export default function ContactPage() {
@@ -21,8 +22,8 @@ export default function ContactPage() {
     message: '',
   });
 
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState('idle'); // 'idle' | 'sending' | 'success' | 'error'
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     document.title = 'Contact Us — Zivaro Global Research';
@@ -31,32 +32,70 @@ export default function ContactPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (submissionStatus === 'error') {
+      setErrorMessage('');
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitting(true);
+    if (submissionStatus === 'sending') return;
 
-    const subject = `Inquiry: ${formData.service || 'Research Project'} - ${formData.firstName} ${formData.lastName}`;
-    const body = [
-      `Name: ${formData.firstName} ${formData.lastName}`,
-      `Email: ${formData.email}`,
-      `Phone: ${formData.phone}`,
-      `Service of Interest: ${formData.service || 'Not specified'}`,
-      '',
-      'Message / Brief:',
-      formData.message,
-    ].join('\n');
+    setSubmissionStatus('sending');
+    setErrorMessage('');
 
-    // Mailto fallback
-    window.location.href = `mailto:sales@zivaroresearch.com?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`;
+    const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
+    if (!accessKey) {
+      const errDetail = 'VITE_WEB3FORMS_ACCESS_KEY is not configured in environment variables.';
+      console.error('Web3Forms Configuration Error:', errDetail);
+      setErrorMessage('Form configuration error: Web3Forms access key is missing. Please check your setup.');
+      setSubmissionStatus('error');
+      return;
+    }
 
-    setTimeout(() => {
-      setSubmitting(false);
-      setSubmitted(true);
-    }, 500);
+    try {
+      const formPayload = new FormData(e.target);
+      formPayload.set('access_key', accessKey);
+      formPayload.set('subject', 'New Contact Inquiry – Zivaro Global Research');
+      formPayload.set('from_name', 'Zivaro Global Research Website');
+      formPayload.set('replyto', formData.email);
+      formPayload.set('firstName', formData.firstName);
+      formPayload.set('lastName', formData.lastName);
+      formPayload.set('email', formData.email);
+      formPayload.set('phone', formData.phone);
+      formPayload.set('service', formData.service || 'Not specified');
+      formPayload.set('message', formData.message);
+
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+        },
+        body: formPayload,
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSubmissionStatus('success');
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: '',
+          service: '',
+          message: '',
+        });
+      } else {
+        console.error('Web3Forms submission failed:', data);
+        setErrorMessage(data.message || 'Failed to submit inquiry. Please try again.');
+        setSubmissionStatus('error');
+      }
+    } catch (err) {
+      console.error('Web3Forms submission network error:', err);
+      setErrorMessage('Network connection error. Please verify your connection and try again.');
+      setSubmissionStatus('error');
+    }
   };
 
   return (
@@ -259,7 +298,7 @@ export default function ContactPage() {
                   Fill in your details below and our sector specialists will connect with you promptly.
                 </p>
 
-                {submitted ? (
+                {submissionStatus === 'success' ? (
                   <div 
                     style={{ 
                       padding: '36px 24px', 
@@ -274,13 +313,13 @@ export default function ContactPage() {
                       Inquiry Dispatched
                     </h4>
                     <p style={{ color: 'var(--text)', fontSize: '0.94rem', lineHeight: '1.6', marginBottom: '20px' }}>
-                      Thank you. Your inquiry parameters have been prepared and your email client opened. Our research team will review and respond within 24 business hours.
+                      Thank you for contacting Zivaro Global Research. Your inquiry has been delivered successfully. Our research directors will review your parameters and respond within 24 business hours.
                     </p>
                     <button
                       type="button"
                       className="btn btn-secondary btn-sm"
                       onClick={() => {
-                        setSubmitted(false);
+                        setSubmissionStatus('idle');
                         setFormData({
                           firstName: '',
                           lastName: '',
@@ -296,6 +335,38 @@ export default function ContactPage() {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '18px' }}>
+                    {/* Web3Forms Honeypot Spam Protection */}
+                    <input 
+                      type="checkbox" 
+                      name="botcheck" 
+                      className="hidden" 
+                      style={{ display: 'none' }} 
+                      tabIndex={-1} 
+                      autoComplete="off" 
+                    />
+
+                    {/* Submission Error Banner */}
+                    {submissionStatus === 'error' && (
+                      <div 
+                        role="alert"
+                        style={{ 
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '12px 16px', 
+                          borderRadius: '10px', 
+                          background: '#FEF2F2', 
+                          border: '1px solid #FECACA', 
+                          color: '#991B1B', 
+                          fontSize: '0.9rem', 
+                          lineHeight: '1.5',
+                        }}
+                      >
+                        <AlertCircle style={{ width: '18px', height: '18px', flexShrink: 0 }} />
+                        <span>{errorMessage || 'There was an issue sending your inquiry. Please try again.'}</span>
+                      </div>
+                    )}
+
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
                       <div>
                         <label 
@@ -480,10 +551,15 @@ export default function ContactPage() {
                     <button
                       type="submit"
                       className="btn btn-primary"
-                      disabled={submitting}
-                      style={{ width: '100%', justifyContent: 'center' }}
+                      disabled={submissionStatus === 'sending'}
+                      style={{ 
+                        width: '100%', 
+                        justifyContent: 'center',
+                        cursor: submissionStatus === 'sending' ? 'not-allowed' : 'pointer',
+                        opacity: submissionStatus === 'sending' ? 0.75 : 1,
+                      }}
                     >
-                      <span>{submitting ? 'Submitting...' : 'Submit Inquiry'}</span>
+                      <span>{submissionStatus === 'sending' ? 'Sending Inquiry...' : 'Submit Inquiry'}</span>
                       <span className="arr">
                         <Send style={{ width: '16px', height: '16px' }} />
                       </span>
